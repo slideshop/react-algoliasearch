@@ -32,7 +32,8 @@ export default class AgAutocomplete extends Component {
       inputId,
       keyName,
       currentLanguage,
-      defaultValue
+      defaultValue,
+      displaySuggestion
     } = this.props;
 
     const agClient = algoliasearch(appId, apiKey);
@@ -44,7 +45,8 @@ export default class AgAutocomplete extends Component {
         displayKey: itemDisplayKey,
         hitsPerPage: itemHitsPerPage,
         keyName: itemKeyName,
-        options: itemOptions
+        options: itemOptions,
+        displaySuggestion: itemDisplaySuggestion
       } = item;
       const agIndex = agClient.initIndex(index);
       const hitsLimit = itemHitsPerPage ? itemHitsPerPage : (hitsPerPage || 10);
@@ -67,10 +69,15 @@ export default class AgAutocomplete extends Component {
             if (currentLanguage) {
               return suggestion._highlightResult[key][this.props.currentLanguage].value;
             }
-            
+
             return suggestion._highlightResult[key].value;
           }
         }
+      }
+      if (itemDisplaySuggestion) {
+        indexOptions.templates.suggestion = itemDisplaySuggestion
+      } else if (displaySuggestion) {
+        indexOptions.templates.suggestion = displaySuggestion
       }
       const agOptions = deepAssign(indexOptions, options, itemOptions);
 
@@ -122,6 +129,7 @@ AgAutocomplete.propTypes = {
   indices: PropTypes.array.isRequired,
   inputId: PropTypes.string.isRequired,
   keyName: PropTypes.string,
+  displaySuggestion: PropTypes.func,
   defaultValue: PropTypes.string,
   name: PropTypes.string,
   options: PropTypes.object,
